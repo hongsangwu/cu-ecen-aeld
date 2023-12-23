@@ -4,8 +4,11 @@
 
 int main(int argc, char *argv[]) {
 
+    openlog(NULL, 0, LOG_USER);
     if (argc != 3) {
         fprintf(stderr, "Usage: writer <file> <string>\n");
+        syslog(LOG_ERR, "Usage: writer <file> <string>\n");
+        closelog();
         exit(EXIT_FAILURE);
     }
 
@@ -13,7 +16,6 @@ int main(int argc, char *argv[]) {
     const char *file = argv[1];
     const char *string = argv[2];
 
-    openlog(NULL, 0, LOG_USER);
 
     FILE *fp = fopen(file, "w");
     if (fp == NULL) {
@@ -30,5 +32,5 @@ int main(int argc, char *argv[]) {
     closelog();
 
     return EXIT_SUCCESS;
-    
+
 }
