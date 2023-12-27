@@ -1,4 +1,10 @@
 #include "systemcalls.h"
+#include <unistd.h>
+#include <sys/wait.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <stdlib.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -16,8 +22,14 @@ bool do_system(const char *cmd)
  *   and return a boolean true if the system() call completed with success
  *   or false() if it returned a failure
 */
-
-    return true;
+    int result = system(cmd);
+    if (result == 0) {
+        printf("Command success.\n");
+        return true;
+    } else {
+        printf("Command failure.\n");
+        return false;
+    }
 }
 
 /**
@@ -59,9 +71,49 @@ bool do_exec(int count, ...)
  *
 */
 
+    fflush(stdout) ;
+
+    pid_t child_pid = fork();
+    int status;
+
+    if (child_pid == -1) { // ERROR
+
+        return -1;
+
+
+    } else if (child_pid == 0) { // Child
+
+        printf("%s\n", command[0]);
+        execv(command[0], command);
+
+        perror("ERROR: Execv in child process failed.");
+        exit (EXIT_FAILURE);
+        //return false;
+
+    } 
+
+
+    /*
     va_end(args);
 
+    wait(&status);
+
     return true;
+    */
+
+    if (waitpid (child_pid, &status, 0) == -1) {
+        //printf("Here!!!\n");
+        return -1;
+    } else if (WIFEXITED (status)) { 
+        //printf("Here 2 !!! %d\n", status);
+        if (status == 0)
+            return true;
+        return false;  
+    } 
+
+    va_end(args);
+    return true;    
+
 }
 
 /**
@@ -93,7 +145,37 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 
-    va_end(args);
+    //va_end(args);
 
-    return true;
+    //return true;
+
+    int fd = open(outputfile, O_WRONLY | O_TRUNC | O_CREAT, 0644);
+
+    pid_t child_pid = fork();
+
+    if (child_pid == -1) {
+        perror("fork");
+        return false;
+    }
+
+    if (child_pid == 0) { // Child
+        if (dup2(fd, STDOUT_FILENO) < 0) {
+            perror("dup2");
+            exit(EXIT_FAILURE);
+        }
+        close(fd);
+
+        execvp(command[0], command);
+        perror("ERROR: execvp");
+        exit(EXIT_FAILURE);
+    } else { // Parent
+        close(fd);
+
+        int status;
+        waitpid(child_pid, &status, 0);
+        va_end(args);
+
+        return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+    }
+    
 }
