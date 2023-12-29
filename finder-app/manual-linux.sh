@@ -74,6 +74,15 @@ fi
 
 # TODO: Create necessary base directories
 
+mkdir -p "${OUTDIR}/rootfs"
+cd "${OUTDIR}/rootfs"
+mkdir -p bin dev etc home lib lib64 proc sbin sys tmp usr var
+mkdir -p usr/bin usr/lib usr/sbin
+mkdir -p var/log
+
+echo "TODO: Create necessary base directories (done)"
+
+
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/busybox" ]
 then
@@ -81,11 +90,21 @@ git clone git://busybox.net/busybox.git
     cd busybox
     git checkout ${BUSYBOX_VERSION}
     # TODO:  Configure busybox
+    make distclean
+    make defconfig
+    echo "# TODO:  Configure busybox (done)"
 else
     cd busybox
+    make distclean
+    make defconfig
 fi
 
 # TODO: Make and install busybox
+make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
+# make CONFIG_PREFIX=/path/to/rootdir ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
+echo "# TODO: Make and install busybox ${OUTDIR} ${ARCH} ${CROSS_COMPILE}"
+make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
+echo "# TODO: Make and install busybox (done)"
 
 echo "Library dependencies"
 ${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
