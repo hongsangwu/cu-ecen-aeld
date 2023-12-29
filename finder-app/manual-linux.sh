@@ -64,6 +64,8 @@ fi
 
 echo "Adding the Image in outdir"
 
+
+
 echo "Creating the staging directory for the root filesystem"
 cd "$OUTDIR"
 if [ -d "${OUTDIR}/rootfs" ]
@@ -129,10 +131,31 @@ sudo mknod -m 600 ${OUTDIR}/rootfs/dev/console c 5 1
 echo "# TODO: Make device nodes (done)"
 
 # TODO: Clean and build the writer utility
+cd ${FINDER_APP_DIR}
+make clean
+make CROSS_COMPILE=${CROSS_COMPILE}
+echo "# TODO: Clean and build the writer utility (done)"
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
+cd ${OUTDIR}/rootfs/home
+cp ${FINDER_APP_DIR}/*.sh .
+cp -r ${FINDER_APP_DIR}/conf .
+cp ${FINDER_APP_DIR}/writer .
+echo "# TODO: Copy the finder related scripts and executables to the /home directory (done)"
 
 # TODO: Chown the root directory
+# Your user account doesn’t exist on the system we are creating
+cd ${OUTDIR}/rootfs
+sudo chown -R root:root *
+echo "# TODO: Chown the root directory (done)"
 
 # TODO: Create initramfs.cpio.gz
+find . | cpio -H newc -ov --owner root:root > ${OUTDIR}/initramfs.cpio
+#gzip -f ${OUTDIR}/initramfs.cpio
+cd ..
+gzip -f initramfs.cpio
+echo "# TODO: Create initramfs.cpio.gz (done)"
+
+# Missing kernel image at /tmp/aesd-autograder/Image
+cp ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ${OUTDIR}
