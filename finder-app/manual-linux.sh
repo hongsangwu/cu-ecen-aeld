@@ -35,6 +35,31 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
     git checkout ${KERNEL_VERSION}
 
     # TODO: Add your kernel build steps here
+
+    echo "TODO: Add your kernel build steps here"
+
+    # “deep clean” the kernel build tree - removing the .config file with any existing configurations
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} mrproper
+    echo "deep clean (done)"
+
+    # Configure for our “virt” arm dev board we will simulate in QEMU
+    make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} defconfig
+    echo "defconfig (done)"
+
+    # Build a kernel image for booting with QEMU
+    make -j4 ARCH=arm64 CROSS_COMPILE=${CROSS_COMPILE} all
+    echo "Build a kernel image for booting with QEMU (done)"
+
+    # Build any kernel modules (i. Skip the modules_install step)
+    # make ARCH=arm64 CROSS_COMPILE=${CROSS_COMPILE} modules
+    # echo "modules (done)"
+
+    # Build the devicetree
+    make ARCH=arm64 CROSS_COMPILE=${CROSS_COMPILE} dtbs
+    echo "dtbs (done)"
+
+    echo "TODO: Add your kernel build steps here (done)"
+
 fi
 
 echo "Adding the Image in outdir"
