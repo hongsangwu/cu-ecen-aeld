@@ -95,8 +95,8 @@ git clone git://busybox.net/busybox.git
     echo "# TODO:  Configure busybox (done)"
 else
     cd busybox
-    make distclean
-    make defconfig
+    #make distclean
+    #make defconfig
 fi
 
 # TODO: Make and install busybox
@@ -107,12 +107,26 @@ make CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} 
 echo "# TODO: Make and install busybox (done)"
 
 echo "Library dependencies"
-${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
-${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
+#errors ... commented out and see
+#${CROSS_COMPILE}readelf -a bin/busybox | grep "program interpreter"
+#${CROSS_COMPILE}readelf -a bin/busybox | grep "Shared library"
+#echo "Library dependencies (done)"
 
 # TODO: Add library dependencies to rootfs
+ROOTDIR=$(${CROSS_COMPILE}gcc -print-sysroot)
+cp ${ROOTDIR}/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+cp ${ROOTDIR}/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
+cp ${ROOTDIR}/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
+cp ${ROOTDIR}/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
+echo "# TODO: Add library dependencies to rootfs (done)"
 
 # TODO: Make device nodes
+# mknod <name> <type> <major> <minor>
+# Null device is a known major 1 minor 3
+sudo mknod -m 666 ${OUTDIR}/rootfs/dev/null c 1 3
+# Console device is known major 5 minor 1
+sudo mknod -m 600 ${OUTDIR}/rootfs/dev/console c 5 1
+echo "# TODO: Make device nodes (done)"
 
 # TODO: Clean and build the writer utility
 
